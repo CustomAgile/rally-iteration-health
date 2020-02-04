@@ -1,19 +1,19 @@
-Ext.define('Rally.technicalservices.WsapiToolbox',{
+Ext.define('Rally.technicalservices.WsapiToolbox', {
     singleton: true,
 
-    fetchDoneStates: function(){
+    fetchDoneStates: function () {
         var deferred = Ext.create('Deft.Deferred');
         Rally.data.ModelFactory.getModel({
             type: 'HierarchicalRequirement',
-            success: function(model) {
+            success: function (model) {
                 var field = model.getField('ScheduleState');
                 field.getAllowedValueStore().load({
-                    callback: function(records, operation, success) {
-                        if (success){
+                    callback: function (records, operation, success) {
+                        if (success) {
                             var values = [];
-                            for (var i=records.length - 1; i > 0; i--){
+                            for (var i = records.length - 1; i > 0; i--) {
                                 values.push(records[i].get('StringValue'));
-                                if (records[i].get('StringValue') == "Accepted"){
+                                if (records[i].get('StringValue') == "Accepted") {
                                     i = 0;
                                 }
                             }
@@ -25,7 +25,7 @@ Ext.define('Rally.technicalservices.WsapiToolbox',{
                     scope: this
                 });
             },
-            failure: function() {
+            failure: function () {
                 var error = "Could not load schedule states";
                 deferred.reject(error);
             }
@@ -33,15 +33,15 @@ Ext.define('Rally.technicalservices.WsapiToolbox',{
         return deferred.promise;
     },
 
-    fetchWsapiRecords: function(context, model_name, model_fields, filters, sort,  pageSize, limit){
+    fetchWsapiRecords: function (context, model_name, model_fields, filters, sort, pageSize, limit) {
         var deferred = Ext.create('Deft.Deferred');
 
         limit = limit || 'Infinity';
         pageSize = pageSize || 200;
         sort = sort || [{
-                property: 'ObjectID',
-                direction: 'DESC'
-            }];
+            property: 'ObjectID',
+            direction: 'DESC'
+        }];
         filters = filters || [];
 
         Ext.create('Rally.data.wsapi.Store', {
@@ -52,23 +52,23 @@ Ext.define('Rally.technicalservices.WsapiToolbox',{
             limit: limit,
             pageSize: pageSize
         }).load({
-            callback : function(records, operation, successful) {
-                if (successful){
+            callback: function (records, operation, successful) {
+                if (successful) {
                     deferred.resolve(records);
                 } else {
-                    deferred.reject(Ext.String.format('Error loading Store (Model = {0}, Fetch = {1}: {2}',model_name, model_fields, operation.error.errors.join(',')));
+                    deferred.reject(Ext.String.format('Error loading Store (Model = {0}, Fetch = {1}: {2}', model_name, model_fields, operation.error.errors.join(',')));
                 }
             }
         });
         return deferred.promise;
     },
-    fetchPreferences: function(appId){
+    fetchPreferences: function (appId) {
         var deferred = Ext.create('Deft.Deferred');
 
-        if (appId){
+        if (appId) {
             Rally.data.PreferenceManager.load({
                 appID: appId,
-                success: function(prefs) {
+                success: function (prefs) {
                     deferred.resolve(prefs);
                 }
             });
@@ -78,18 +78,18 @@ Ext.define('Rally.technicalservices.WsapiToolbox',{
 
         return deferred.promise;
     },
-    fetchWsapiCount: function(model, query_filters){
+    fetchWsapiCount: function (model, query_filters) {
         var deferred = Ext.create('Deft.Deferred');
 
-        var store = Ext.create('Rally.data.wsapi.Store',{
+        var store = Ext.create('Rally.data.wsapi.Store', {
             model: model,
             fetch: ['ObjectID'],
             filters: query_filters,
             limit: 1,
             pageSize: 1
         }).load({
-            callback: function(records, operation, success){
-                if (success){
+            callback: function (records, operation, success) {
+                if (success) {
                     deferred.resolve(operation.resultSet.totalRecords);
                 } else {
                     deferred.reject(Ext.String.format("Error getting {0} count for {1}: {2}", model, query_filters.toString(), operation.error.errors.join(',')));
