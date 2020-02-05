@@ -85,7 +85,9 @@ Ext.define("rally-iteration-health", {
         });
     },
     _initForLeafProject: function (iterationCallbackFn) {
-        this.down('#criteria_box').add({
+        let controlCtn = this.down('#criteria_box');
+
+        controlCtn.add({
             xtype: 'rallynumberfield',
             itemId: 'num-iterations',
             minValue: 1,
@@ -113,7 +115,7 @@ Ext.define("rally-iteration-health", {
             ]
         });
 
-        this.down('#criteria_box').add({
+        controlCtn.add({
             xtype: 'rallycombobox',
             itemId: 'cb-metric',
             fieldLabel: 'Metric:',
@@ -131,6 +133,8 @@ Ext.define("rally-iteration-health", {
                 change: this._updateDisplay
             }
         });
+
+        this.addExportButton(controlCtn);
     },
     _fetchIterationsForMultipleTeams: function (nbf) {
         var today_iso = Rally.util.DateTime.toIsoString(new Date());
@@ -715,6 +719,70 @@ Ext.define("rally-iteration-health", {
     isExternal: function () {
         return typeof (this.getAppId()) == 'undefined';
     },
+
+    addExportButton: function (ct) {
+        ct.add({
+            xtype: 'rallybutton',
+            id: 'export-btn',
+            iconCls: 'icon-export',
+            cls: 'rly-small secondary',
+            handler: this._export,
+            margin: '0 0 0 40',
+            scope: this
+        });
+    },
+
+    // _exportBtnClick: function (button) {
+    //     var menu = Ext.widget({
+    //         xtype: 'rallymenu',
+    //         items: [{
+    //             text: 'Export Table Data...',
+    //             handler: this._export,
+    //             scope: this
+    //         }, {
+    //             text: 'Export Raw Data...',
+    //             handler: this._exportRawData,
+    //             scope: this
+    //         }]
+    //     });
+    //     menu.showBy(button.getEl());
+    //     if (button.toolTip) {
+    //         button.toolTip.hide();
+    //     }
+    // },
+
+    _export: function () {
+        let grid = this.down('rallygrid');
+
+        if (grid && this.iterationHealthStore) {
+            let records = this.iterationHealthStore.getRecords();
+            if (records) {
+                let csv = [];
+                let header = [];
+                let columns = grid.columnCfgs;
+                let fileName = `iteration-health-${Rally.util.DateTime.format(new Date(), 'Y-m-d-h-i-s')}.csv`;
+
+                for (let c of columns) {
+                    header.push(c.text);
+                }
+
+                csv.push(header.join(','));
+
+                for (let r of records) {
+                    let row = [];
+                    for (let c of columns) {
+                        // row.push(this.healthConfig.getRenderer(c.dataIndex)(r.get(c.dataIndex), {}, r));
+                        row.push(r.get(c.dataIndex));
+                    }
+                    csv.push(row.join(','));
+                }
+
+                csv = csv.join('\r\n');
+                CATS.workitemThroughput.utils.Toolbox.saveAs(csv, fileName);
+            }
+        }
+    },
+
     //onSettingsUpdate:  Override
     onSettingsUpdate: function (settings) {
         Ext.apply(this, settings);
