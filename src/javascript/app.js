@@ -765,6 +765,7 @@ Ext.define("rally-iteration-health", {
                 for (let c of columns) {
                     header.push(c.text);
                 }
+                header.push('Project');
 
                 csv.push(header.join(','));
 
@@ -772,8 +773,19 @@ Ext.define("rally-iteration-health", {
                     let row = [];
                     for (let c of columns) {
                         // row.push(this.healthConfig.getRenderer(c.dataIndex)(r.get(c.dataIndex), {}, r));
-                        row.push(r.get(c.dataIndex));
+                        if (c.dataIndex === '__sayDoRatioData') {
+                            if (this.down('#cb-metric').getValue() === 'points') {
+                                row.push(r.get(c.dataIndex).size_ratio);
+                            }
+                            else {
+                                row.push(r.get(c.dataIndex).count_ratio);
+                            }
+                        }
+                        else {
+                            row.push(r.get(c.dataIndex));
+                        }
                     }
+                    row.push(r.get('Project').Name);
                     csv.push(row.join(','));
                 }
 
