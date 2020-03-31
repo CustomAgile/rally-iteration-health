@@ -582,8 +582,11 @@ Ext.define('Rally.technicalservices.healthConfiguration', {
             this.displaySettings.__velocityVariance.display = false;
         }
 
-        this.showSayDo = settings.showSayDo || false;
-        this.displaySettings.__sayDoRatioData.display = this.showSayDo;
+        if (settings.showSayDo === true || settings.showSayDo === "true") {
+            this.displaySettings.__sayDoRatioData.display = true;
+        } else {
+            this.displaySettings.__sayDoRatioData.display = false;
+        }
 
         if (settings.showIterationCycleTime != false && settings.showIterationCycleTime != "false") {
             this.displaySettings.__cycleTime.display = true;

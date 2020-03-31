@@ -440,7 +440,8 @@ Ext.define("rally-iteration-health", {
             deferred = Ext.create('Deft.Deferred');
 
         if (!this.getSetting('showSayDo') || iterationRecords.length === 0) {
-            return [];
+            deferred.resolve({});
+            return deferred.promise;
         }
 
         this._showStatus("Loading Iteration Say/Do Data")
@@ -773,7 +774,7 @@ Ext.define("rally-iteration-health", {
                     let row = [];
                     for (let c of columns) {
                         // row.push(this.healthConfig.getRenderer(c.dataIndex)(r.get(c.dataIndex), {}, r));
-                        if (c.dataIndex === '__sayDoRatioData') {
+                        if (c.dataIndex === '__sayDoRatioData' && this.getSetting('showSayDo')) {
                             if (this.down('#cb-metric').getValue() === 'points') {
                                 row.push(r.get(c.dataIndex).size_ratio);
                             }
@@ -913,7 +914,7 @@ Ext.define("rally-iteration-health", {
             autoScroll: true
         }, options));
 
-        this._appSettings.on('cancel', this._hideSettings, this);
+        this._appSettings.on('cancel', this.hideSettings, this);
         this._appSettings.on('save', this._onSettingsSaved, this);
         if (this.isExternal()) {
             if (this.down('#settings_box').getComponent(this._appSettings.id) == undefined) {
@@ -938,7 +939,7 @@ Ext.define("rally-iteration-health", {
 
     _onSettingsSaved: function (settings) {
         Ext.apply(this.settings, settings);
-        this._hideSettings();
+        this.hideSettings();
         this.healthConfig.updateSettings(settings);
         this.onSettingsUpdate(settings);
     }
